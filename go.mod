@@ -1,4 +1,4 @@
-module first.com
+module github.com/sriramk1n1/C_Platform_Backend
 
 go 1.21.6
 
