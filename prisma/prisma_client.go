@@ -1,6 +1,6 @@
 package prisma
 
-import "first.com/prisma/db"
+import "github.com/sriramk1n1/C_Platform_Backend/prisma/db"
 
 func HandleDBOperation(operation func(client *db.PrismaClient) error) error {
 	client := db.NewClient()
