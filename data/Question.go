@@ -3,9 +3,9 @@ package data
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 
+	"first.com/prisma"
 	"first.com/prisma/db"
 )
 
@@ -29,65 +29,43 @@ func (q *Question) FromJSON(r io.Reader) error {
 }
 
 func AddQuestion(q *Question) error {
-	err := insert(q)
-	if err != nil {
-		return err
-	}
-	return nil
+	return insert(q)
 }
 
-func GetQuestion(id int) *Question {
-	res, _ := find(id)
-	return res
+func GetQuestion(id int) (*Question, error) {
+	return find(id)
 }
 
-// database operations
+// database operation functions
+
 func insert(q *Question) error {
-	client := db.NewClient()
-	if err := client.Prisma.Connect(); err != nil {
+	return prisma.HandleDBOperation(func(client *db.PrismaClient) error {
+		ctx := context.Background()
+		_, err := client.Question.CreateOne(
+			db.Question.Name.Set(q.Name),
+			db.Question.Desc.Set(q.Desc),
+			db.Question.Input.Set(q.Input),
+			db.Question.Output.Set(q.Output),
+			db.Question.Constraints.Set(q.Constraints),
+		).Exec(ctx)
 		return err
-	}
-	defer func() {
-		if err := client.Prisma.Disconnect(); err != nil {
-			panic(err)
-		}
-	}()
-
-	ctx := context.Background()
-
-	client.Question.CreateOne(
-		db.Question.Name.Set(q.Name),
-		db.Question.Desc.Set(q.Desc),
-		db.Question.Input.Set(q.Input),
-		db.Question.Output.Set(q.Output),
-		db.Question.Constraints.Set(q.Constraints),
-	).Exec(ctx)
-	fmt.Print("Inserted in to database")
-	return nil
+	})
 }
 
 func find(id int) (*Question, error) {
-	client := db.NewClient()
-	if err := client.Prisma.Connect(); err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := client.Prisma.Disconnect(); err != nil {
-			panic(err)
+	result := &Question{}
+	return result, prisma.HandleDBOperation(func(client *db.PrismaClient) error {
+		ctx := context.Background()
+		res, err := client.Question.FindUnique(db.Question.ID.Equals(id)).Exec(ctx)
+		constraints, _ := res.Constraints()
+		result = &Question{
+			Id:          res.ID,
+			Name:        res.Name,
+			Desc:        res.Desc,
+			Constraints: constraints,
+			Input:       res.Input,
+			Output:      res.Output,
 		}
-	}()
-
-	ctx := context.Background()
-
-	res, _ := client.Question.FindUnique(db.Question.ID.Equals(id)).Exec(ctx)
-	constraints, _ := res.Constraints()
-	result := &Question{
-		Id:          res.ID,
-		Name:        res.Name,
-		Desc:        res.Desc,
-		Constraints: constraints,
-		Input:       res.Input,
-		Output:      res.Output,
-	}
-	return result, nil
+		return err
+	})
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"io"
 
+	"first.com/prisma"
 	"first.com/prisma/db"
 )
 
@@ -21,24 +22,17 @@ func (q *Questions) ToJSON(w io.Writer) error {
 }
 
 func GetQuestionList() (Questions, error) {
-	client := db.NewClient()
-	if err := client.Prisma.Connect(); err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := client.Prisma.Disconnect(); err != nil {
-			panic(err)
+	questions := Questions{}
+	return questions, prisma.HandleDBOperation(func(client *db.PrismaClient) error {
+		ctx := context.Background()
+		res, _ := client.Question.FindMany().Exec(ctx)
+		for _, question := range res {
+			ele := &partialQuestion{
+				Id:   question.ID,
+				Name: question.Name,
+			}
+			questions = append(questions, ele)
 		}
-	}()
-	ctx := context.Background()
-	res, _ := client.Question.FindMany().Exec(ctx)
-	qlist := Questions{}
-	for _, question := range res {
-		ele := &partialQuestion{
-			Id:   question.ID,
-			Name: question.Name,
-		}
-		qlist = append(qlist, ele)
-	}
-	return qlist, nil
+		return nil
+	})
 }

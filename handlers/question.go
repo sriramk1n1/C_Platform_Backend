@@ -3,6 +3,7 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"os"
 	"strconv"
 
 	"first.com/data"
@@ -17,7 +18,7 @@ func NewQuestion(l *log.Logger) *Question {
 }
 
 func (q *Question) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Access-Control-Allow-Origin", "*")
+	rw.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
 
 	if r.Method == http.MethodGet {
 		q.getQuestion(rw, r)
@@ -34,15 +35,21 @@ func (q *Question) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 func (q *Question) getQuestion(rw http.ResponseWriter, r *http.Request) {
 	userID := r.URL.Query().Get("id")
 	id, _ := strconv.Atoi(userID)
-	question := data.GetQuestion(id)
-	err := question.ToJSON(rw)
+	question, err := data.GetQuestion(id)
 	if err != nil {
-		println("ERROR: encoding json")
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
+	}
+	err = question.ToJSON(rw)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusInternalServerError)
 	}
 }
 
 func (q *Question) addQuestion(rw http.ResponseWriter, r *http.Request) {
 	question := &data.Question{}
 	question.FromJSON(r.Body)
-	data.AddQuestion(question)
+	err := data.AddQuestion(question)
+	if err != nil {
+		http.Error(rw, err.Error(), http.StatusBadRequest)
+	}
 }

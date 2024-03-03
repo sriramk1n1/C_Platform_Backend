@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"first.com/handlers"
+	"github.com/joho/godotenv"
 )
 
 func main() {
@@ -14,10 +15,12 @@ func main() {
 	qhandler := handlers.NewQuestionList(l)
 	qqhandler := handlers.NewQuestion(l)
 	dhandler := handlers.NewDocument(l)
+	thandler := handlers.NewTestCase(l)
 	sm := http.NewServeMux()
 	sm.Handle("/", qhandler)
 	sm.Handle("/question", qqhandler)
 	sm.Handle("/document", dhandler)
+	sm.Handle("/testcase", thandler)
 
 	s := &http.Server{Addr: ":8080",
 		Handler:      sm,
@@ -25,6 +28,6 @@ func main() {
 		ReadTimeout:  60 * time.Second,
 		WriteTimeout: 60 * time.Second,
 	}
-
+	godotenv.Load()
 	s.ListenAndServe()
 }

@@ -1,17 +1,26 @@
 datasource db {
   provider = "mysql"
-  url      = env("DB_URL")
+  url      = env("DATABASE_URL")
 }
- 
+
 generator db {
   provider = "go run github.com/steebchen/prisma-client-go"
 }
- 
+
 model Question {
-    id Int @id @default(autoincrement())
-    name String @db.LongText
-    desc String @db.LongText
-    constraints String? @db.LongText
-    input String @db.Text
-    output String @db.Text
+  id          Int        @id @default(autoincrement())
+  name        String     @db.LongText
+  desc        String     @db.LongText
+  constraints String?    @db.LongText
+  input       String     @db.Text
+  output      String     @db.Text
+  TestCase    TestCase[]
+}
+
+model TestCase {
+  id        Int @id @default(autoincrement())
+  qid       Int     
+  question  Question @relation(fields: [qid], references: [id])
+  input     String @db.Text
+  output    String @db.Text
 }
