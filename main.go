@@ -10,9 +10,8 @@ import (
 )
 
 func main() {
-
 	l := log.New(os.Stdout, "--", log.LstdFlags)
-	qhandler := handlers.NewQuestion_list(l)
+	qhandler := handlers.NewQuestionList(l)
 	qqhandler := handlers.NewQuestion(l)
 	dhandler := handlers.NewDocument(l)
 	sm := http.NewServeMux()
@@ -20,8 +19,7 @@ func main() {
 	sm.Handle("/question", qqhandler)
 	sm.Handle("/document", dhandler)
 
-	s := &http.Server{
-		Addr:         ":8080",
+	s := &http.Server{Addr: ":8080",
 		Handler:      sm,
 		IdleTimeout:  60 * time.Second,
 		ReadTimeout:  60 * time.Second,

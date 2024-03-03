@@ -1,0 +1,17 @@
+datasource db {
+  provider = "mysql"
+  url      = env("DB_URL")
+}
+ 
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+ 
+model Question {
+    id Int @id @default(autoincrement())
+    name String @db.LongText
+    desc String @db.LongText
+    constraints String? @db.LongText
+    input String @db.Text
+    output String @db.Text
+}
