@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"io"
 
-	"first.com/prisma"
-	"first.com/prisma/db"
+	"github.com/sriramk1n1/C_Platform_Backend/prisma"
+	"github.com/sriramk1n1/C_Platform_Backend/prisma/db"
 )
 
 type Question struct {

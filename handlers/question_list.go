@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"os"
 
-	"first.com/data"
+	"github.com/sriramk1n1/C_Platform_Backend/data"
 )
 
 type Question_list struct {

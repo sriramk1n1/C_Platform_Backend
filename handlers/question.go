@@ -6,7 +6,7 @@ import (
 	"os"
 	"strconv"
 
-	"first.com/data"
+	"github.com/sriramk1n1/C_Platform_Backend/data"
 )
 
 type Question struct {

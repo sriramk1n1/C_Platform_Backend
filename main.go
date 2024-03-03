@@ -6,8 +6,8 @@ import (
 	"os"
 	"time"
 
-	"first.com/handlers"
 	"github.com/joho/godotenv"
+	"github.com/sriramk1n1/C_Platform_Backend/handlers"
 )
 
 func main() {

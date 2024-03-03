@@ -13,9 +13,9 @@ import (
 	"strconv"
 	"strings"
 
-	"first.com/data"
-	"first.com/prisma"
-	"first.com/prisma/db"
+	"github.com/sriramk1n1/C_Platform_Backend/data"
+	"github.com/sriramk1n1/C_Platform_Backend/prisma"
+	"github.com/sriramk1n1/C_Platform_Backend/prisma/db"
 )
 
 type Document struct {
