@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 
 	"first.com/data"
@@ -76,7 +77,8 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		result.ToJSON(w)
 		return
 	}
-	t, _ := getTestCases()
+	id, _ := strconv.Atoi(r.FormValue("id"))
+	t, _ := getTestCases(id)
 	result.Total = len(t)
 	pass := 0
 	for _, i := range t {
@@ -106,17 +108,16 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	os.Remove("a.out")
 	os.Remove(filename)
-	os.Remove(filename)
 	result.Accepted = true
 	result.Passed = pass
 	result.ToJSON(w)
 }
 
-func getTestCases() (data.TestCases, error) {
+func getTestCases(id int) (data.TestCases, error) {
 	t := data.TestCases{}
 	return t, prisma.HandleDBOperation(func(client *db.PrismaClient) error {
 		ctx := context.Background()
-		res, err := client.TestCase.FindMany(db.TestCase.Qid.Equals(1)).Exec(ctx)
+		res, err := client.TestCase.FindMany(db.TestCase.Qid.Equals(id)).Exec(ctx)
 		for _, i := range res {
 			cur := &data.TestCase{
 				Input:  i.Input,
