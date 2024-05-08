@@ -1,0 +1,56 @@
+generator db {
+  provider = "go run github.com/steebchen/prisma-client-go"
+}
+
+datasource db {
+  provider = "postgres"
+  url      = "postgresql://postgres:password@localhost:5000/miniproject"
+}
+
+model question {
+  id          Int        @id(map: "Question_pkey")
+  name        String
+  desc        String
+  constraints String?    @default("")
+  input1      String?    @default("")
+  input2      String?    @default("")
+  input3      String?    @default("")
+  output1     String?    @default("")
+  output2     String?    @default("")
+  output3     String?    @default("")
+  category    String?
+  level       Int        @default(1000)
+  solved      solved[]
+  testcase    testcase[]
+}
+
+model sessions {
+  id    String  @id @db.Uuid
+  email String?
+  users users?  @relation(fields: [email], references: [email], onDelete: Cascade)
+}
+
+model solved {
+  email    String
+  qid      Int
+  users    users    @relation(fields: [email], references: [email], onDelete: Cascade)
+  question question @relation(fields: [qid], references: [id], onDelete: Cascade)
+
+  @@id([email, qid], map: "pk")
+}
+
+model testcase {
+  id       Int      @id(map: "TestCase_pkey") @default(autoincrement())
+  qid      Int
+  input    String
+  output   String
+  question question @relation(fields: [qid], references: [id], map: "TestCase_qid_fkey")
+}
+
+model users {
+  email    String     @id(map: "user_pkey")
+  password String
+  points   Int?       @default(0)
+  sessions sessions[]
+  solved   solved[]
+}
