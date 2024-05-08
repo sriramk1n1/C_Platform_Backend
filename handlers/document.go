@@ -74,7 +74,6 @@ func executeWithTimeout(input string) (string, error, string) {
 
 func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
-	skip := r.FormValue("skip")
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println("ERROR:", err.Error())
@@ -83,13 +82,8 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("ERROR:", err.Error())
 	}
 	defer db.Close()
-	email := r.FormValue("email")
 	id, _ := strconv.Atoi(r.FormValue("id"))
-	if skip == "true" {
-		db.Exec("call update_user_points($1,$2,$3,$4)", email, id, 0.3, "FALSE")
-		w.Write([]byte("skipped"))
-		return
-	}
+
 	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -158,9 +152,6 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	os.Remove(filename)
 	result.Accepted = true
 	result.Passed = pass
-
-	db.Exec("insert into solved(email,qid) values ($1,$2)", email, id)
-	db.Exec("call update_user_points($1,$2,$3,$4)", email, id, 0.5, "TRUE")
 
 	result.ToJSON(w)
 }
