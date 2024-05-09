@@ -18,13 +18,14 @@ func NewQuestion(l *log.Logger) *Question {
 }
 
 func (q *Question) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
 
 	if r.Method == http.MethodGet {
+		rw.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
 		q.getQuestion(rw, r)
 		return
 	}
 	if r.Method == http.MethodPost {
+		rw.Header().Set("Access-Control-Allow-Origin", "*")
 		q.addQuestion(rw, r)
 		return
 	}

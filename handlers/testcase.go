@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"os"
 
 	"github.com/sriramk1n1/C_Platform_Backend/data"
 )
@@ -18,7 +17,7 @@ func NewTestCase(l *log.Logger) *TestCase {
 }
 
 func (t *TestCase) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
+	rw.Header().Set("Access-Control-Allow-Origin", "*")
 	testcase := &data.TestCase{}
 	testcase.FromJSON(r.Body)
 	fmt.Printf("%#v", testcase)
