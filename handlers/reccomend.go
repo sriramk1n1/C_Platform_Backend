@@ -8,6 +8,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"strconv"
 
 	_ "github.com/lib/pq"
 )
@@ -44,12 +45,9 @@ func (q *Recommend) ServeHTTP(rw http.ResponseWriter, r *http.Request) {
 }
 
 func (q *Recommend) recommend(rw http.ResponseWriter, r *http.Request) {
-	rw.Header().Set("Access-Control-Allow-Credentials", "true")
-	c, _ := r.Cookie("accessToken")
-	id := c.String()[12:]
-
 	rw.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
 	var points int
+	points, _ = strconv.Atoi(r.FormValue("rating"))
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println("ERROR:", err.Error())
@@ -58,7 +56,6 @@ func (q *Recommend) recommend(rw http.ResponseWriter, r *http.Request) {
 		fmt.Println("ERROR:", err.Error())
 	}
 	defer db.Close()
-	db.QueryRow("select points from users where email in (select email from sessions where id = $1);", id).Scan(&points)
 	res, err := db.Query("select q.id,q.name as distance from question q order by abs(q.level-$1) limit 5;", points)
 	li := &mystruct_list{}
 	for res.Next() {

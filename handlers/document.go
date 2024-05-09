@@ -34,6 +34,7 @@ type Result struct {
 	Time     string `json:"Time"`
 	Total    int    `json:"total"`
 	Passed   int    `json:"passed"`
+	Points   int    `json:"points"`
 }
 
 func (r *Result) ToJSON(w io.Writer) error {
@@ -74,6 +75,8 @@ func executeWithTimeout(input string) (string, error, string) {
 
 func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Origin", os.Getenv("CORS"))
+	skip := r.FormValue("skip")
+
 	db, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		fmt.Println("ERROR:", err.Error())
@@ -83,7 +86,13 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	defer db.Close()
 	id, _ := strconv.Atoi(r.FormValue("id"))
-
+	if skip == "true" {
+		var p int
+		db.QueryRow("SELECT CAST(level * 0.3 AS INT) FROM question where id = $1;", id).Scan(&p)
+		w.Write([]byte(strconv.Itoa(p)))
+		fmt.Println("skip", p)
+		return
+	}
 	err = r.ParseMultipartForm(10 << 20)
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusBadRequest)
@@ -117,6 +126,7 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		result.Warnings = compileerror.String()
 		result.Accepted = false
+		result.Points = 0
 		os.Remove("a.out")
 		os.Remove(filename)
 		result.ToJSON(w)
@@ -132,6 +142,7 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			result.Warnings = sterr
 			result.Accepted = false
 			result.Passed = pass
+			result.Points = 0
 			result.ToJSON(w)
 			os.Remove("a.out")
 			os.Remove(filename)
@@ -141,6 +152,7 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 			pass++
 		} else {
 			result.Accepted = false
+			result.Points = 0
 			result.Passed = pass
 			result.ToJSON(w)
 			os.Remove("a.out")
@@ -150,6 +162,7 @@ func (d *Document) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 	os.Remove("a.out")
 	os.Remove(filename)
+	db.QueryRow("SELECT CAST(level * 0.5 AS INT) FROM question where id = $1;", id).Scan(&result.Points)
 	result.Accepted = true
 	result.Passed = pass
 
